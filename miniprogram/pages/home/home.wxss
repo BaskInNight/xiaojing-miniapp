@@ -1,0 +1,147 @@
+.header {
+  padding: 30rpx 0 10rpx;
+}
+
+.top-bar {
+  margin-bottom: 8rpx;
+}
+
+.profile-entry {
+  background: #FFFFFF;
+  border-radius: 30rpx;
+  padding: 10rpx 20rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.04);
+}
+
+.location-bar {
+  background: #FFFFFF;
+  border-radius: 40rpx;
+  padding: 16rpx 24rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.04);
+}
+
+.loc-icon {
+  width: 32rpx;
+  height: 32rpx;
+}
+
+.slogan-section {
+  text-align: center;
+  padding: 60rpx 0 40rpx;
+}
+
+.slogan-title {
+  font-size: 56rpx;
+  font-weight: 800;
+  background: linear-gradient(135deg, #FF8C00, #E85D00, #FFAA00);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: block;
+  letter-spacing: 8rpx;
+}
+
+.slogan-sub {
+  font-size: 28rpx;
+  color: #9B8B76;
+  margin-top: 16rpx;
+  letter-spacing: 12rpx;
+}
+
+.core-actions {
+  margin: 20rpx 0;
+  gap: 16rpx;
+}
+
+.action-card {
+  height: 200rpx;
+  border-radius: 24rpx;
+  border: none;
+  padding: 0;
+}
+
+.action-card::after {
+  border: none;
+}
+
+.action-icon-text {
+  font-size: 48rpx;
+}
+
+.action-desc {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.service-section {
+  margin: 30rpx 0 20rpx;
+}
+
+.section-title {
+  color: #3D2E1A;
+}
+
+.service-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16rpx;
+}
+
+.service-item {
+  text-align: center;
+  padding: 30rpx 16rpx;
+  margin: 0;
+}
+
+.service-icon {
+  width: 48rpx;
+  height: 48rpx;
+}
+
+.device-preview {
+  margin: 20rpx 0;
+}
+
+.device-list {
+  flex-wrap: wrap;
+  gap: 12rpx;
+}
+
+.device-chip {
+  display: flex;
+  align-items: center;
+  background: #FFFFFF;
+  border-radius: 30rpx;
+  padding: 12rpx 20rpx;
+  border: 1rpx solid #EDE4D8;
+}
+
+.device-fault {
+  opacity: 0.5;
+  border-color: rgba(255, 82, 82, 0.3);
+}
+
+.status-dot {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+}
+
+.dot-success {
+  background: #00E676;
+  box-shadow: 0 0 8rpx rgba(0, 230, 118, 0.5);
+}
+
+.dot-working {
+  background: #FF8C00;
+  box-shadow: 0 0 8rpx rgba(255, 140, 0, 0.5);
+  animation: pulse 2s infinite;
+}
+
+.dot-fault {
+  background: #FF5252;
+  box-shadow: 0 0 8rpx rgba(255, 82, 82, 0.5);
+}
+
+.coupon-banner {
+  margin: 20rpx 0;
+  padding: 24rpx;
+}

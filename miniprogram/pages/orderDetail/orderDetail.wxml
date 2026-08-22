@@ -1,0 +1,99 @@
+<view class="container" style="padding-bottom: 160rpx;">
+  <!-- 加载中 -->
+  <view class="loading" wx:if="{{loading}}">
+    <text class="text-secondary">加载中...</text>
+  </view>
+
+  <block wx:if="{{!loading && order}}">
+    <!-- 状态横幅 -->
+    <view class="status-banner {{order.status === '已完成' ? 'tag-success' : order.status === '已预约' ? 'tag-warning' : ''}}"
+          style="background: {{order.status === '已取消' ? 'rgba(255,82,82,0.15)' : 'rgba(0,191,255,0.1)'}};">
+      <text class="text-xxl" wx:if="{{order.status === '已完成'}}">✅</text>
+      <text class="text-xxl" wx:if="{{order.status === '已预约'}}">⏳</text>
+      <text class="text-xxl" wx:if="{{order.status === '已取消'}}">❌</text>
+      <text class="text-xl font-bold mt-8 block">{{order.status || '未知'}}</text>
+      <text class="text-sm text-secondary mt-8 block" wx:if="{{order.status === '已完成'}}">清洗已完成，请及时取衣</text>
+      <text class="text-sm text-secondary mt-8 block" wx:if="{{order.status === '已预约'}}">等待设备启动中</text>
+    </view>
+
+    <!-- 订单信息 -->
+    <view class="info-card card-glass">
+      <text class="text-md font-semibold mb-16 block">📄 订单信息</text>
+      <view class="flex-row flex-between mt-8">
+        <text class="text-sm text-secondary">订单编号</text>
+        <text class="text-sm">{{order._id}}</text>
+      </view>
+      <view class="flex-row flex-between mt-8">
+        <text class="text-sm text-secondary">设备名称</text>
+        <text class="text-sm">{{order.deviceName || '--'}}</text>
+      </view>
+      <view class="flex-row flex-between mt-8">
+        <text class="text-sm text-secondary">清洗模式</text>
+        <text class="text-sm">{{getPackageLabel(order.package)}}</text>
+      </view>
+      <view class="flex-row flex-between mt-8">
+        <text class="text-sm text-secondary">下单时间</text>
+        <text class="text-sm">{{formatTime(order.createdAt)}}</text>
+      </view>
+      <view class="flex-row flex-between mt-8" wx:if="{{order.startTime && order.startTime !== '立即'}}">
+        <text class="text-sm text-secondary">预约时间</text>
+        <text class="text-sm">{{order.startTime}}</text>
+      </view>
+      <view class="flex-row flex-between mt-8" wx:if="{{order.endTime}}">
+        <text class="text-sm text-secondary">预计完成</text>
+        <text class="text-sm">{{order.endTime}}</text>
+      </view>
+    </view>
+
+    <!-- 步骤明细 -->
+    <view class="info-card card-glass" wx:if="{{steps.length > 0 || order.allowUv === true}}">
+      <text class="text-md font-semibold mb-16 block">🛠️ 清洗步骤</text>
+      <view class="step-item flex-row flex-between" wx:for="{{steps}}" wx:key="label">
+        <view class="flex-row">
+          <text>{{item.emoji}}</text>
+          <text class="text-sm ml-8">{{item.label}}</text>
+        </view>
+        <text class="text-sm text-secondary">{{item.count}}{{item.unit}} · {{item.time}}分钟</text>
+      </view>
+      <view class="step-item flex-row flex-between" wx:if="{{order.allowUv === true}}">
+        <view class="flex-row">
+          <text>🦠</text>
+          <text class="text-sm ml-8">UV 消毒</text>
+        </view>
+        <text class="text-sm text-warning">已勾选</text>
+      </view>
+    </view>
+
+    <!-- 费用明细 -->
+    <view class="info-card card-glass">
+      <text class="text-md font-semibold mb-16 block">💰 费用明细</text>
+      <view class="flex-row flex-between mt-8">
+        <text class="text-sm text-secondary">订单总价</text>
+        <text class="text-sm">¥{{order.totalPrice}}</text>
+      </view>
+      <view class="flex-row flex-between mt-8" wx:if="{{order.useCoupon}}">
+        <text class="text-sm text-success">优惠券抵扣</text>
+        <text class="text-sm text-success">-¥1</text>
+      </view>
+      <view class="divider"></view>
+      <view class="flex-row flex-between mt-8">
+        <text class="text-md font-semibold">实付金额</text>
+        <text class="text-xl font-bold primary-gradient-text">¥{{order.finalPrice}}</text>
+      </view>
+    </view>
+  </block>
+
+  <!-- 底部操作栏 -->
+  <view class="action-bar" wx:if="{{!loading && order}}">
+    <button class="btn btn-outline" bindtap="goBack">返回</button>
+    <block wx:if="{{order.status === '已预约'}}">
+      <button class="btn primary-gradient" bindtap="cancelOrder">取消订单</button>
+    </block>
+    <block wx:if="{{order.status === '已完成'}}">
+      <button class="btn primary-gradient" bindtap="rebook">再次预约</button>
+    </block>
+    <block wx:if="{{order.status === '已取消'}}">
+      <button class="btn primary-gradient" bindtap="rebook">重新预约</button>
+    </block>
+  </view>
+</view>

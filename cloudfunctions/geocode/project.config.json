@@ -1,0 +1,13 @@
+{
+  "setting": {
+    "es6": true,
+    "postcss": true,
+    "minified": true,
+    "enhance": true
+  },
+  "appid": "wxe712a62e3a90faca",
+  "projectname": "geocode",
+  "libVersion": "3.16.0",
+  "cloudfunctionRoot": "./",
+  "compileType": "cloudfunction"
+}

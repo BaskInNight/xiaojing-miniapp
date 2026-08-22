@@ -1,0 +1,64 @@
+{
+  "pages": [
+    "pages/login/login",
+    "pages/home/home",
+    "pages/orders/orders",
+    "pages/orderDetail/orderDetail",
+    "pages/wash/wash",
+    "pages/devices/devices",
+    "pages/booking/booking",
+    "pages/profile/profile",
+    "pages/repair/repair"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#0A1628",
+    "navigationBarTitleText": "净界同频",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#0A1628",
+    "enablePullDownRefresh": true
+  },
+  "tabBar": {
+    "color": "#8A9BB5",
+    "selectedColor": "#00BFFF",
+    "backgroundColor": "#0A1628",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/home/home",
+        "text": "首页",
+        "iconPath": "images/tab_home.png",
+        "selectedIconPath": "images/tab_home_active.png"
+      },
+      {
+        "pagePath": "pages/orders/orders",
+        "text": "订单",
+        "iconPath": "images/tab_orders.png",
+        "selectedIconPath": "images/tab_orders_active.png"
+      },
+      {
+        "pagePath": "pages/booking/booking",
+        "text": "预约",
+        "iconPath": "images/tab_welfare.png",
+        "selectedIconPath": "images/tab_welfare_active.png"
+      },
+      {
+        "pagePath": "pages/profile/profile",
+        "text": "我的",
+        "iconPath": "images/tab_profile.png",
+        "selectedIconPath": "images/tab_profile_active.png"
+      }
+    ]
+  },
+  "permission": {
+    "scope.userLocation": {
+      "desc": "用于查找附近设备"
+    }
+  },
+  "requiredPrivateInfos": [
+    "getLocation"
+  ],
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

@@ -1,0 +1,63 @@
+<view class="login-container">
+  <view class="login-header">
+    <text class="app-icon">🧼</text>
+    <text class="app-name">净界同频</text>
+    <text class="app-slogan">校园共享洗衣 · 便捷环保</text>
+  </view>
+
+  <!-- 头像 -->
+  <view class="avatar-section">
+    <button class="avatar-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
+      <image class="avatar-img" src="{{avatarUrl || ''}}" mode="aspectFill" wx:if="{{avatarUrl}}" />
+      <view class="avatar-placeholder" wx:else>
+        <text class="avatar-placeholder-icon">+</text>
+      </view>
+      <text class="avatar-hint">点击设置头像</text>
+    </button>
+  </view>
+
+  <!-- 昵称 -->
+  <view class="nickname-section">
+    <input
+      class="nickname-input"
+      type="nickname"
+      placeholder="点击输入昵称"
+      placeholder-class="nickname-placeholder"
+      maxlength="20"
+      bindinput="onNicknameInput"
+    />
+  </view>
+
+  <view class="login-body" wx:if="{{!agreed}}">
+    <text class="text-sm text-secondary">请阅读并同意以下协议</text>
+    <view class="agreement-box" bindtap="toggleAgree">
+      <checkbox checked="{{agreed}}" class="agree-checkbox" />
+      <text class="text-xs text-secondary">
+        已阅读并同意
+        <text class="text-primary">《用户服务协议》</text>
+        和
+        <text class="text-primary">《隐私政策》</text>
+      </text>
+    </view>
+  </view>
+
+  <view class="login-btn-section">
+    <button
+      class="wechat-login-btn {{agreed ? 'primary-gradient' : 'btn-disabled'}}"
+      disabled="{{!agreed || logging}}"
+      loading="{{logging}}"
+      bindtap="doLogin"
+    >
+      <text wx:if="{{!logging}}">登  录</text>
+      <text wx:else>登录中...</text>
+    </button>
+
+    <button class="skip-btn" bindtap="skipLogin" wx:if="{{!logging}}">
+      暂不登录，随便看看
+    </button>
+  </view>
+
+  <view class="login-footer">
+    <text class="text-xs text-secondary">登录即表示您同意使用条款</text>
+  </view>
+</view>

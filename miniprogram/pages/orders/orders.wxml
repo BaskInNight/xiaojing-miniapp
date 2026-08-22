@@ -1,0 +1,81 @@
+<view class="container">
+  <view class="flex-between mb-24">
+    <text class="text-xl font-bold">📋 我的订单</text>
+  </view>
+
+  <!-- Tab 切换 -->
+  <view class="tabs flex-row mb-24">
+    <view class="tab-item {{currentTab === item.key ? 'active' : ''}}" wx:for="{{tabs}}" wx:key="key" bindtap="switchTab" data-tab="{{item.key}}">
+      <text>{{item.label}}</text>
+    </view>
+  </view>
+
+  <!-- 加载状态 -->
+  <view wx:if="{{loading}}" class="flex-center" style="padding: 60rpx 0;">
+    <text class="text-secondary">加载中...</text>
+  </view>
+
+  <!-- 订单列表 -->
+  <view wx:if="{{!loading && orders.length > 0}}">
+    <view class="order-card card-glass" wx:for="{{orders}}" wx:key="id" data-id="{{item._id || item.id}}">
+
+      <view class="order-header flex-row flex-between">
+        <text class="text-md font-semibold flex-1">{{item.deviceName || '未知设备'}}</text>
+        <text class="tag {{item.status === '已完成' ? 'tag-success' : (item.status === '已预约' || item.status === '待启动' || item.status === '启动待确认' || item.status === '进行中') ? 'tag-warning' : ''}}"
+              style="{{item.status === '已取消' ? 'background:rgba(255,82,82,0.2);color:#FF5252;' : ''}}">
+          {{item.status}}
+        </text>
+      </view>
+
+      <view class="order-info">
+        <view class="flex-row flex-between mt-8">
+          <text class="text-xs text-secondary">下单时间</text>
+          <text class="text-sm">{{formatTime(item.createdAt)}}</text>
+        </view>
+        <view class="flex-row flex-between mt-8">
+          <text class="text-xs text-secondary">清洗模式</text>
+          <text class="text-sm">{{getPackageLabel(item.package)}}</text>
+        </view>
+        <view class="flex-row flex-between mt-8" wx:if="{{item.totalTime}}">
+          <text class="text-xs text-secondary">总时长</text>
+          <text class="text-sm">{{item.totalTime}}分钟</text>
+        </view>
+        <view class="flex-row flex-between mt-8">
+          <text class="text-xs text-secondary">实付金额</text>
+          <text class="text-md font-bold primary-gradient-text">¥{{item.finalPrice}}</text>
+        </view>
+      </view>
+
+      <view class="order-footer flex-row" style="justify-content: flex-end; gap: 12rpx;">
+        <block wx:if="{{item.status === '已预约' || item.status === '待启动' || item.status === '启动待确认' || item.status === '进行中'}}">
+          <button class="action-btn btn-outline" bindtap="cancelOrder" data-id="{{item._id || item.id}}">取消订单</button>
+          <button class="action-btn primary-gradient" bindtap="goDetail" data-id="{{item._id || item.id}}">查看详情</button>
+        </block>
+        <block wx:if="{{item.status === '已完成'}}">
+          <button class="action-btn btn-outline" bindtap="rebook" data-order="{{item}}">再次预约</button>
+          <button class="action-btn primary-gradient" bindtap="goDetail" data-id="{{item._id || item.id}}">查看详情</button>
+        </block>
+        <block wx:if="{{item.status === '已取消'}}">
+          <button class="action-btn btn-outline" bindtap="rebook" data-order="{{item}}">重新预约</button>
+          <button class="action-btn" style="background:rgba(255,82,82,0.2);color:#FF5252;" bindtap="deleteOrder" data-id="{{item._id || item.id}}">删除</button>
+        </block>
+      </view>
+    </view>
+
+    <!-- 加载更多 -->
+    <view class="loading-more" wx:if="{{loadingMore}}">
+      <text class="text-xs text-secondary">加载更多...</text>
+    </view>
+    <view class="loading-more" wx:if="{{!hasMore && orders.length > 0}}">
+      <text class="text-xs text-secondary">— 没有更多了 —</text>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state flex-column flex-center" wx:if="{{!loading && orders.length === 0}}">
+    <text class="text-xxl">📋</text>
+    <text class="text-md text-secondary mt-16">暂无订单记录</text>
+    <text class="text-xs text-secondary mt-8">去首页预约洗衣吧</text>
+    <button class="btn-primary mt-24" style="width: 300rpx; padding: 20rpx 0;" bindtap="goHome">去首页</button>
+  </view>
+</view>

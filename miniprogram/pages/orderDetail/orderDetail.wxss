@@ -1,0 +1,64 @@
+.page-title {
+  padding-top: 20rpx;
+}
+
+.status-banner {
+  text-align: center;
+  padding: 30rpx;
+  border-radius: 24rpx;
+  margin: 20rpx 0;
+}
+
+.info-card {
+  padding: 24rpx;
+  margin: 20rpx 0;
+}
+
+.step-item {
+  padding: 12rpx 0;
+  border-bottom: 1rpx solid #EDE4D8;
+}
+
+.step-item:last-child {
+  border-bottom: none;
+}
+
+.action-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20rpx 30rpx;
+  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+  background: #FFFFFF;
+  border-top: 1rpx solid #EDE4D8;
+  display: flex;
+  gap: 16rpx;
+}
+
+.action-bar .btn {
+  flex: 1;
+  height: 80rpx;
+  border-radius: 40rpx;
+  font-size: 28rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+}
+
+.loading {
+  padding-top: 200rpx;
+  text-align: center;
+}
+
+.mt-8 { margin-top: 8rpx; }
+.mt-12 { margin-top: 12rpx; }
+.mt-16 { margin-top: 16rpx; }
+.mt-24 { margin-top: 24rpx; }
+.mb-8 { margin-bottom: 8rpx; }
+.mb-16 { margin-bottom: 16rpx; }
+.mb-24 { margin-bottom: 24rpx; }
+.mr-8 { margin-right: 8rpx; }
+.ml-8 { margin-left: 8rpx; }
+.ml-12 { margin-left: 12rpx; }

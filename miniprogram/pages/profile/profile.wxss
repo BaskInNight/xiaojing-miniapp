@@ -1,0 +1,259 @@
+.page-top {
+  padding-top: 60rpx;
+}
+
+.user-section {
+  text-align: center;
+  padding: 40rpx 0;
+}
+
+.avatar {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+  background: #EDE4D8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48rpx;
+  margin: 0 auto;
+}
+
+.stats-grid {
+  display: flex;
+  flex-direction: row;
+  margin: 20rpx 0;
+}
+
+.stat-item {
+  flex: 1;
+  text-align: center;
+  padding: 20rpx 0;
+}
+
+.stat-number {
+  font-size: 40rpx;
+}
+
+.menu-card {
+  padding: 0;
+  margin: 20rpx 0;
+  overflow: hidden;
+}
+
+.menu-item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28rpx 24rpx;
+  border-bottom: 1rpx solid #EDE4D8;
+}
+
+.menu-item:last-child {
+  border-bottom: none;
+}
+
+.menu-icon {
+  width: 40rpx;
+  height: 40rpx;
+  font-size: 36rpx;
+  text-align: center;
+}
+
+.menu-arrow {
+  color: #9B8B76;
+  font-size: 28rpx;
+}
+
+.logout-btn {
+  width: 100%;
+  height: 80rpx;
+  border-radius: 40rpx;
+  border: 2rpx solid rgba(255, 82, 82, 0.3);
+  color: #FF5252;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28rpx;
+  margin-top: 40rpx;
+  background: transparent;
+}
+
+.btn-login {
+  width: 240rpx;
+  height: 72rpx;
+  border-radius: 36rpx;
+  background: linear-gradient(135deg, #FF8C00, #D97700);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28rpx;
+  border: none;
+  padding: 0;
+}
+
+.btn-logout {
+  width: 240rpx;
+  height: 72rpx;
+  border-radius: 36rpx;
+  border: 2rpx solid rgba(255, 82, 82, 0.3);
+  color: #FF5252;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26rpx;
+  background: transparent;
+  padding: 0;
+}
+
+.avatar-img {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+  margin: 0 auto;
+  display: block;
+  border: 2rpx solid rgba(255, 140, 0, 0.3);
+}
+
+.btn-avatar-auth {
+  width: 360rpx;
+  height: 72rpx;
+  border-radius: 36rpx;
+  background: linear-gradient(135deg, #FF8C00, #D97700);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26rpx;
+  border: none;
+  padding: 0;
+}
+
+.avatar-btn {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+  margin: 0 auto;
+  padding: 0;
+  border: none;
+  background: transparent;
+  position: relative;
+  display: block;
+  outline: none;
+  overflow: hidden;
+}
+
+.avatar-btn::after {
+  border: none;
+}
+
+.avatar-edit-badge {
+  position: absolute;
+  bottom: 0;
+  right: -8rpx;
+  font-size: 24rpx;
+  background: rgba(0,0,0,0.6);
+  border-radius: 50%;
+  width: 36rpx;
+  height: 36rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nickname-input {
+  display: block;
+  margin: 16rpx auto 0;
+  text-align: center;
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #3D2E1A;
+  background: #FFF5EB;
+  border: 1rpx solid #EDE4D8;
+  border-radius: 12rpx;
+  padding: 8rpx 20rpx;
+  width: 300rpx;
+}
+
+.voice-wifi-card {
+  padding: 28rpx 24rpx;
+}
+
+.voice-wifi-title {
+  color: #3D2E1A;
+  font-size: 30rpx;
+  font-weight: 600;
+}
+
+.voice-wifi-hint {
+  color: #8C7A65;
+  font-size: 24rpx;
+  margin: 10rpx 0 22rpx;
+}
+
+.demo-preset-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 0 12rpx;
+  color: #6F5D48;
+  font-size: 24rpx;
+}
+
+.demo-secret-toggle {
+  color: #D97700;
+  font-weight: 700;
+  padding: 8rpx 0 8rpx 20rpx;
+}
+
+.voice-wifi-input {
+  box-sizing: border-box;
+  width: 100%;
+  height: 76rpx;
+  margin-top: 14rpx;
+  padding: 0 20rpx;
+  border: 1rpx solid #E7D7C3;
+  border-radius: 12rpx;
+  color: #3D2E1A;
+  background: #FFF9F2;
+  font-size: 26rpx;
+}
+
+.voice-wifi-button {
+  height: 76rpx;
+  margin-top: 22rpx;
+  border-radius: 38rpx;
+  color: #FFFFFF;
+  background: linear-gradient(135deg, #FF8C00, #D97700);
+  font-size: 27rpx;
+  line-height: 76rpx;
+}
+
+.voice-wifi-button::after {
+  border: none;
+}
+
+.voice-provider-picker {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 76rpx;
+  margin-top: 14rpx;
+  padding: 20rpx;
+  border: 1rpx solid #E7D7C3;
+  border-radius: 12rpx;
+  color: #3D2E1A;
+  background: #FFF9F2;
+  font-size: 26rpx;
+}
+
+.mt-8 { margin-top: 8rpx; }
+.mt-16 { margin-top: 16rpx; }
+.mt-24 { margin-top: 24rpx; }
+.mt-32 { margin-top: 32rpx; }
+.mt-40 { margin-top: 40rpx; }
+.mb-16 { margin-bottom: 16rpx; }
+.mb-24 { margin-bottom: 24rpx; }
+.ml-8 { margin-left: 8rpx; }
+.ml-12 { margin-left: 12rpx; }

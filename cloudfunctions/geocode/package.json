@@ -1,0 +1,9 @@
+{
+  "name": "geocode",
+  "version": "1.0.0",
+  "description": "逆地址解析（坐标转文字地址）",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "latest"
+  }
+}

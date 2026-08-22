@@ -1,0 +1,67 @@
+<view class="container">
+  <text class="page-title text-xl font-bold mb-16 block">蓝牙设备扫描</text>
+
+  <!-- 扫码与扫描 -->
+  <view class="scan-section mb-24">
+    <view class="flex-row" style="gap: 16rpx;">
+      <button class="scan-btn primary-gradient shadow-glow flex-1" bindtap="scanQRCode">
+        <text class="text-lg">📷 扫一扫</text>
+      </button>
+      <button class="scan-btn {{scanning ? 'btn-outline' : 'card-glass'}} flex-1" bindtap="startScan" disabled="{{scanning}}">
+        <text class="text-lg">{{scanning ? '扫描中...' : '🔍 蓝牙扫描'}}</text>
+      </button>
+    </view>
+    <text class="text-xs text-secondary text-center block mt-8" wx:if="{{scanning}}">
+      正在搜索净界设备（JJTP开头）...
+    </text>
+  </view>
+
+  <!-- 设备列表 -->
+  <view class="device-list">
+    <text class="text-sm text-secondary mb-8 block" wx:if="{{devices.length > 0}}">
+      发现 {{devices.length}} 台设备
+    </text>
+
+    <view class="device-card card-glass flex-row flex-between {{item._fault ? 'device-fault-card' : ''}}" wx:for="{{devices}}" wx:key="deviceId" bindtap="selectDevice" data-device="{{item}}">
+      <view class="flex-1">
+        <view class="flex-row">
+          <text class="text-lg font-semibold {{item._fault ? 'text-secondary' : ''}}">{{item.name}}</text>
+          <text class="tag tag-success ml-8" wx:if="{{item._connected}}">CONNECTED</text>
+          <text class="tag tag-success ml-8" wx:if="{{item.RSSI > -60 && !item._fault}}">信号强</text>
+          <text class="tag tag-warning ml-8" wx:elif="{{item.RSSI > -80 && !item._fault}}">信号中</text>
+          <text class="tag ml-8" style="background:rgba(255,82,82,0.2);color:#FF5252;" wx:elif="{{!item._fault}}">信号弱</text>
+          <text class="tag ml-8" style="background:rgba(255,82,82,0.3);color:#FF5252;" wx:if="{{item._fault}}">故障</text>
+        </view>
+        <text class="text-xs text-secondary mt-4" wx:if="{{!item._fault}}">信号强度：{{item.RSSI}} dBm</text>
+        <text class="text-xs text-secondary mt-4">设备ID：{{item.deviceId}}</text>
+        <text class="text-xs text-danger mt-4" wx:if="{{item._fault}}">{{item._faultReason || '设备故障'}}</text>
+      </view>
+      <view class="flex-column flex-center">
+        <view class="signal-icon">
+          <text wx:if="{{item.RSSI > -60}}">📶</text>
+          <text wx:elif="{{item.RSSI > -80}}">📶</text>
+          <text wx:else>📶</text>
+        </view>
+        <text class="{{item._fault ? 'text-secondary' : 'text-primary'}} mt-8">{{item._fault ? '不可用' : '连接 ›'}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state flex-column flex-center mt-32" wx:if="{{!scanning && devices.length === 0}}">
+    <text class="text-xxl">📡</text>
+    <text class="text-md text-secondary mt-16">未发现设备</text>
+    <text class="text-sm text-secondary mt-8">请确保：</text>
+    <text class="text-xs text-secondary mt-4">1. 手机蓝牙已开启</text>
+    <text class="text-xs text-secondary mt-4">2. 设备已通电开机</text>
+    <text class="text-xs text-secondary mt-4">3. 设备在10米范围内</text>
+    <button class="btn-outline mt-24" style="width: 300rpx; padding: 16rpx 0;" bindtap="startScan">
+      重新扫描
+    </button>
+  </view>
+
+  <!-- 使用提示 -->
+  <view class="tips card-glass mt-24">
+    <text class="text-sm text-secondary">💡 设备名称以 JJTP 开头，请靠近设备后扫描</text>
+  </view>
+</view>

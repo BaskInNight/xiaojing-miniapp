@@ -1,0 +1,173 @@
+<view class="container">
+  <view class="page-top">
+    <!-- 用户信息 -->
+    <view class="user-section">
+      <button class="avatar-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar" wx:if="{{loggedIn}}">
+        <image class="avatar-img" src="{{avatarUrl}}" wx:if="{{avatarUrl}}" mode="aspectFill" />
+        <view class="avatar text-primary" wx:else>👤</view>
+        <view class="avatar-edit-badge">✏️</view>
+      </button>
+      <view class="avatar text-primary" wx:else>👤</view>
+
+      <input type="nickname" class="nickname-input" value="{{nickName}}" placeholder="点击设置昵称" bindchange="onNicknameChange" wx:if="{{loggedIn}}" />
+      <text class="text-xl font-semibold mt-16 block" wx:else>{{nickName}}</text>
+
+      <button class="btn-login mt-16" bindtap="goLogin" wx:if="{{!loggedIn}}">微信登录</button>
+    </view>
+
+    <!-- 统计卡片 -->
+    <view class="card-glass stats-grid">
+      <view class="stat-item">
+        <text class="stat-number font-bold primary-gradient-text">{{totalOrders}}</text>
+        <text class="text-xs text-secondary mt-8 block">总订单</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-number font-bold primary-gradient-text">{{coupons}}</text>
+        <text class="text-xs text-secondary mt-8 block">优惠券</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-number font-bold primary-gradient-text">¥{{totalSpend}}</text>
+        <text class="text-xs text-secondary mt-8 block">总消费</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 功能菜单 -->
+  <view class="menu-card card-glass voice-wifi-card">
+    <view class="voice-wifi-title">语音 Wi-Fi 配网</view>
+    <view class="voice-wifi-hint">固件内置 Demo 预设；NVS 已有用户配置时不会被覆盖。</view>
+    <view class="demo-preset-row">
+      <text>预设 SSID：JINGJIE</text>
+      <text class="demo-secret-toggle" bindtap="toggleDemoSecrets">{{showDemoSecrets ? '隐藏凭据' : '显示凭据'}}</text>
+    </view>
+    <input class="voice-wifi-input"
+           maxlength="32"
+           placeholder="Wi-Fi 名称（SSID）"
+           value="{{voiceWifiSsid}}"
+           bindinput="onVoiceWifiSsidInput" />
+    <input class="voice-wifi-input"
+           password="{{!showDemoSecrets}}"
+           maxlength="63"
+           placeholder="Wi-Fi 密码（开放网络可留空）"
+           value="{{voiceWifiPassword}}"
+           bindinput="onVoiceWifiPasswordInput" />
+    <button class="voice-wifi-button"
+            loading="{{voiceWifiProvisioning}}"
+            disabled="{{voiceWifiProvisioning}}"
+            bindtap="provisionVoiceWifi">保存并连接</button>
+  </view>
+
+  <view class="menu-card card-glass voice-wifi-card">
+    <view class="voice-wifi-title">AI 服务配置</view>
+    <view class="voice-wifi-hint">
+      默认直连 MiMo，不消耗大模型网关额度。修改配置前请先长按设备按钮1；无需手机系统配对。
+    </view>
+    <picker range="{{voiceProviderOptions}}"
+            value="{{voiceProviderIndex}}"
+            bindchange="onVoiceProviderChange">
+      <view class="voice-provider-picker">
+        服务：{{voiceProviderOptions[voiceProviderIndex]}}
+      </view>
+    </picker>
+    <input class="voice-wifi-input"
+           password="{{!showDemoSecrets}}"
+           maxlength="255"
+           placeholder="API Key（不会保存在小程序本地）"
+           value="{{voiceApiKey}}"
+           bindinput="onVoiceApiKeyInput" />
+    <input class="voice-wifi-input"
+           maxlength="63"
+           placeholder="模型名称，例如 mimo-v2.5"
+           value="{{voiceModel}}"
+           bindinput="onVoiceModelInput" />
+    <button class="voice-wifi-button"
+            loading="{{voiceCredentialProvisioning}}"
+            disabled="{{voiceCredentialProvisioning}}"
+            bindtap="configureVoiceProvider">安全保存并重启设备</button>
+  </view>
+
+  <view class="menu-card card-glass">
+    <view class="menu-item" bindtap="goOrders">
+      <view class="flex-row">
+        <text class="menu-icon">📋</text>
+        <text class="text-md ml-12">我的订单</text>
+      </view>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item" bindtap="goBooking">
+      <view class="flex-row">
+        <text class="menu-icon">📅</text>
+        <text class="text-md ml-12">我的预约</text>
+      </view>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item" bindtap="goRepair">
+      <view class="flex-row">
+        <text class="menu-icon">🔧</text>
+        <text class="text-md ml-12">报修/投诉</text>
+      </view>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item" bindtap="callService">
+      <view class="flex-row">
+        <text class="menu-icon">📞</text>
+        <text class="text-md ml-12">联系客服</text>
+      </view>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item" bindtap="showTips">
+      <view class="flex-row">
+        <text class="menu-icon">📖</text>
+        <text class="text-md ml-12">使用说明</text>
+      </view>
+      <text class="menu-arrow">›</text>
+    </view>
+  </view>
+
+  <!-- 我的优惠券 -->
+  <view class="menu-card card-glass" wx:if="{{couponList.length > 0}}">
+    <view class="menu-item" style="border-bottom:1rpx solid rgba(255,255,255,0.05);">
+      <view class="flex-row">
+        <text class="menu-icon">🎟️</text>
+        <text class="text-md ml-12">我的优惠券（{{couponList.length}}张可用）</text>
+      </view>
+    </view>
+    <view class="coupon-in-list flex-row flex-between" wx:for="{{couponList}}" wx:key="id" style="padding:16rpx 24rpx;border-bottom:1rpx solid rgba(255,255,255,0.03);">
+      <view class="flex-row flex-1">
+        <text class="text-sm font-semibold">{{item.name}}</text>
+        <text class="text-xs text-secondary ml-8">至{{formatExpire(item.expireAt)}}</text>
+      </view>
+      <text class="text-md font-bold primary-gradient-text">¥{{item.value}}</text>
+    </view>
+  </view>
+
+  <!-- 广告领券入口 -->
+  <view class="menu-card card-glass" bindtap="watchAd" wx:if="{{loggedIn}}">
+    <view class="menu-item">
+      <view class="flex-row">
+        <text class="menu-icon">🎬</text>
+        <view class="ml-12">
+          <text class="text-md block">观看广告获得优惠券</text>
+          <text class="text-xs text-secondary">每日限领1张 · 当前有{{coupons}}张可用</text>
+        </view>
+      </view>
+      <text class="menu-arrow">›</text>
+    </view>
+  </view>
+
+  <!-- 退出登录 -->
+  <view class="menu-card card-glass" wx:if="{{loggedIn}}">
+    <view class="menu-item" bindtap="logout" style="justify-content:center;">
+      <text style="color:#FF5252;">退出登录</text>
+    </view>
+  </view>
+
+  <view class="menu-card card-glass">
+    <view class="menu-item" style="justify-content:center;">
+      <text class="text-xs text-secondary">APP VERSION {{appVersion}}</text>
+    </view>
+    <view class="menu-item" style="justify-content:center;">
+      <text class="text-xs text-secondary">BLE DEBUG {{bleDebugText}}</text>
+    </view>
+  </view>
+</view>

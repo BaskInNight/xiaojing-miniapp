@@ -1,0 +1,43 @@
+<view class="container">
+  <text class="page-title text-xl font-bold mb-24 block">报修/投诉</text>
+
+  <view class="form-card card-glass">
+    <view class="form-item">
+      <text class="text-sm text-secondary mb-8 block">问题类型</text>
+      <picker mode="selector" range="{{issueTypes}}" bindchange="onTypeChange">
+        <view class="picker-value flex-row flex-between">
+          <text>{{issueTypes[selectedType]}}</text>
+          <text class="text-secondary">▼</text>
+        </view>
+      </picker>
+    </view>
+
+    <view class="form-item mt-16">
+      <text class="text-sm text-secondary mb-8 block">设备编号（选填）</text>
+      <input class="input-field" placeholder="请输入设备编号" value="{{deviceId}}" bindinput="onDeviceIdInput"/>
+    </view>
+
+    <view class="form-item mt-16">
+      <text class="text-sm text-secondary mb-8 block">问题描述</text>
+      <textarea class="textarea-field" placeholder="请详细描述您遇到的问题..." maxlength="500" value="{{description}}" bindinput="onDescInput"/>
+      <text class="text-xs text-secondary text-right mt-8">{{description.length}}/500</text>
+    </view>
+
+    <view class="form-item mt-16">
+      <text class="text-sm text-secondary mb-8 block">联系方式</text>
+      <input class="input-field" placeholder="请输入手机号" type="number" value="{{phone}}" bindinput="onPhoneInput"/>
+    </view>
+  </view>
+
+  <button class="submit-btn btn-primary shadow-glow mt-32" bindtap="submitIssue">
+    <text class="text-lg font-semibold">提交反馈</text>
+  </button>
+
+  <view class="contact-card card-glass mt-24 flex-row flex-between" bindtap="callService">
+    <view>
+      <text class="text-md font-semibold block">📞 紧急情况？直接电话联系</text>
+      <text class="text-xs text-secondary mt-4">客服热线：027-12345678</text>
+    </view>
+    <text class="text-primary">拨打 ›</text>
+  </view>
+</view>

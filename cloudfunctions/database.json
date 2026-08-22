@@ -1,0 +1,70 @@
+{
+  "collections": [
+    {
+      "name": "users",
+      "permission": {
+        "read": "doc._openid == auth.openid",
+        "write": "doc._openid == auth.openid"
+      },
+      "indexes": [
+        { "name": "by_openid", "keys": [{ "name": "_openid", "direction": "asc" }], "unique": true }
+      ]
+    },
+    {
+      "name": "devices",
+      "permission": {
+        "read": true,
+        "write": false
+      },
+      "indexes": [
+        { "name": "by_bleName", "keys": [{ "name": "bleName", "direction": "asc" }], "unique": true },
+        { "name": "by_status", "keys": [{ "name": "status", "direction": "asc" }] }
+      ]
+    },
+    {
+      "name": "orders",
+      "permission": {
+        "read": "doc._openid == auth.openid",
+        "write": "doc._openid == auth.openid"
+      },
+      "indexes": [
+        { "name": "by_openid_status", "keys": [{ "name": "_openid", "direction": "asc" }, { "name": "status", "direction": "asc" }] },
+        { "name": "by_openid_created", "keys": [{ "name": "_openid", "direction": "asc" }, { "name": "createdAt", "direction": "desc" }] },
+        { "name": "by_orderNo", "keys": [{ "name": "orderNo", "direction": "asc" }], "unique": true }
+      ]
+    },
+    {
+      "name": "coupon_templates",
+      "permission": {
+        "read": true,
+        "write": false
+      },
+      "indexes": [
+        { "name": "by_type", "keys": [{ "name": "type", "direction": "asc" }] }
+      ]
+    },
+    {
+      "name": "user_coupons",
+      "permission": {
+        "read": "doc._openid == auth.openid",
+        "write": "doc._openid == auth.openid"
+      },
+      "indexes": [
+        { "name": "by_openid_status", "keys": [{ "name": "_openid", "direction": "asc" }, { "name": "status", "direction": "asc" }] },
+        { "name": "by_openid_source", "keys": [{ "name": "_openid", "direction": "asc" }, { "name": "source", "direction": "asc" }] },
+        { "name": "by_expireAt", "keys": [{ "name": "expireAt", "direction": "asc" }] }
+      ]
+    },
+    {
+      "name": "issues",
+      "permission": {
+        "read": "doc._openid == auth.openid",
+        "write": "doc._openid == auth.openid"
+      },
+      "indexes": [
+        { "name": "by_openid", "keys": [{ "name": "_openid", "direction": "asc" }] },
+        { "name": "by_status", "keys": [{ "name": "status", "direction": "asc" }] }
+      ]
+    }
+  ]
+}

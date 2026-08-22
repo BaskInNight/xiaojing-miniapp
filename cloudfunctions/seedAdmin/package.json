@@ -1,0 +1,8 @@
+{
+  "name": "seedAdmin",
+  "version": "1.0.0",
+  "dependencies": {
+    "wx-server-sdk": "latest",
+    "bcryptjs": "^2.4.3"
+  }
+}

@@ -1,0 +1,669 @@
+<view class="container">
+
+  <!-- 顶部操作栏 -->
+  <view class="top-bar flex-between">
+    <view class="flex-row" bindtap="goHome">
+      <image class="bar-icon" src="/images/icon_back.png" mode="aspectFit"></image>
+      <text class="text-sm text-secondary ml-8">返回首页</text>
+    </view>
+    <view class="flex-row" bindtap="switchDevice">
+      <text class="text-sm text-primary mr-8">{{bleDeviceName || '选择设备'}}</text>
+      <text class="text-sm">🔄 切换</text>
+    </view>
+  </view>
+
+  <!-- 蓝牙连接状态 -->
+  <view class="ble-status card-glass">
+    <view class="flex-row flex-between">
+      <view class="flex-row">
+        <view class="ble-dot {{bleConnected ? 'dot-connected' : 'dot-disconnected'}}"></view>
+        <text class="text-md ml-8 {{bleConnected ? 'text-success' : 'text-danger'}}">
+          {{bleConnected ? '蓝牙已连接' : '蓝牙未连接'}}
+        </text>
+      </view>
+      <button class="btn-small {{bleConnected ? 'btn-outline' : 'primary-gradient'}}"
+              bindtap="toggleConnection"
+              size="mini">
+        {{bleConnected ? '断开' : '连接'}}
+      </button>
+    </view>
+    <view class="flex-row mt-8" wx:if="{{bleConnected}}">
+      <text class="text-xs text-secondary">设备：{{bleDeviceName}}</text>
+      <text class="text-xs text-secondary ml-16">信号：{{bleRSSI}}</text>
+    </view>
+  </view>
+
+  <!-- AI 云端处理状态提示（从 3.2 迁移，对接 ESP32 语音 AI） -->
+  <view class="card-glass" wx:if="{{aiProcessing || reconnecting}}" style="margin-top: 16rpx; padding: 24rpx;">
+    <view class="flex-row flex-center">
+      <text class="text-md font-semibold" style="color: #00BFFF;">AI 正在处理中，请稍候……</text>
+    </view>
+    <view class="flex-row flex-center mt-8" wx:if="{{expectedDisconnect || reconnecting}}">
+      <text class="text-xs text-secondary">设备会短暂断开蓝牙，处理完成后将自动重连。</text>
+    </view>
+    <view class="flex-row flex-center mt-8" wx:if="{{reconnecting}}">
+      <text class="text-xs text-primary">正在自动重连设备…… 已尝试 {{reconnectAttempts}} / {{maxReconnectAttempts}} 次</text>
+    </view>
+  </view>
+
+  <!-- ========== 官方推荐固定套餐 ========== -->
+  <view class="section">
+    <text class="section-title text-md font-semibold mb-16 block">📋 官方推荐套餐</text>
+
+    <view class="package-card card-glass flex-row flex-between {{selectedPackage === 'quick' ? 'package-active' : ''}}" bindtap="selectPackage" data-package="quick">
+      <view class="flex-1">
+        <text class="text-lg font-semibold">⚡ 无烘干快洗模式</text>
+        <view class="flex-row mt-8">
+          <text class="text-xs text-secondary">浸泡+搓洗+漂洗+甩干</text>
+        </view>
+        <view class="flex-row mt-8">
+          <text class="tag tag-success">10分钟</text>
+          <text class="text-xs text-secondary ml-8">快速洁净</text>
+        </view>
+      </view>
+      <view class="package-right flex-column flex-center">
+        <text class="text-xxl font-bold primary-gradient-text">¥1</text>
+        <view class="check-circle {{selectedPackage === 'quick' ? 'checked' : ''}} mt-8">
+          <text wx:if="{{selectedPackage === 'quick'}}">✓</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="package-card card-glass flex-row flex-between {{selectedPackage === 'dry' ? 'package-active' : ''}}" bindtap="selectPackage" data-package="dry">
+      <view class="flex-1">
+        <text class="text-lg font-semibold">💨 烘干清洗模式</text>
+        <view class="flex-row mt-8">
+          <text class="text-xs text-secondary">浸泡+搓洗+漂洗+甩干+烘干</text>
+        </view>
+        <view class="flex-row mt-8">
+          <text class="tag tag-primary">30分钟</text>
+          <text class="text-xs text-secondary ml-8">全程呵护</text>
+        </view>
+      </view>
+      <view class="package-right flex-column flex-center">
+        <text class="text-xxl font-bold primary-gradient-text">¥2</text>
+        <view class="check-circle {{selectedPackage === 'dry' ? 'checked' : ''}} mt-8">
+          <text wx:if="{{selectedPackage === 'dry'}}">✓</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- ========== 优惠券选择 ========== -->
+  <view class="section" wx:if="{{coupons.length > 0}}">
+    <text class="section-title text-md font-semibold mb-16 block">🎫 选择优惠券</text>
+
+    <view class="coupon-item card-glass flex-row flex-between {{selectedCouponId === item.id ? 'coupon-active' : ''}}"
+          wx:for="{{coupons}}" wx:key="id" bindtap="selectCoupon" data-id="{{item.id}}">
+      <view class="flex-row flex-1">
+        <text class="text-lg mr-12">🎟️</text>
+        <view>
+          <text class="text-md font-semibold block">{{item.name}}</text>
+          <text class="text-xs text-secondary">有效期至：{{formatExpire(item.expireAt)}}</text>
+        </view>
+      </view>
+      <view class="flex-row flex-center">
+        <text class="text-xl font-bold primary-gradient-text">¥{{item.value}}</text>
+        <view class="check-circle {{selectedCouponId === item.id ? 'checked' : ''}} ml-8">
+          <text wx:if="{{selectedCouponId === item.id}}">✓</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="section" wx:if="{{protocolProfileOnly}}">
+    <view class="card-glass" style="padding: 24rpx;">
+      <text class="text-sm font-semibold text-primary block">ESP32 安全程序模式</text>
+      <text class="text-xs text-secondary block mt-8">
+        小程序下发正式洗涤程序，只控制是否包含烘干。进水、洗涤、漂洗、排水、脱水和安全姿态由设备端 planner 按已验证配置执行。
+      </text>
+    </view>
+  </view>
+
+  <!-- ========== 自定义流程搭配 ========== -->
+  <view class="section" wx:if="{{!protocolProfileOnly}}">
+    <text class="section-title text-md font-semibold mb-16 block">🎛️ 自定义流程搭配（可自主增减）</text>
+
+    <!-- 浸泡 -->
+    <view class="step-card card-glass" wx:if="{{customSteps.soak.enabled}}">
+      <view class="flex-row flex-between">
+        <view class="flex-row">
+          <text class="step-emoji">💧</text>
+          <view class="ml-12">
+            <text class="text-md font-semibold block">浸泡</text>
+            <text class="text-xs text-secondary">5分钟/次</text>
+          </view>
+        </view>
+        <view class="flex-row">
+          <text class="text-xs text-secondary mr-8">{{customSteps.soak.count}}次</text>
+          <text class="text-success">免费</text>
+          <view class="step-controls flex-row ml-8">
+            <view class="ctrl-btn" bindtap="decreaseStep" data-step="soak">−</view>
+            <text class="text-sm ctrl-count">{{customSteps.soak.count}}</text>
+            <view class="ctrl-btn" bindtap="increaseStep" data-step="soak">+</view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 搓洗 -->
+    <view class="step-card card-glass" wx:if="{{customSteps.wash.enabled}}">
+      <view class="flex-row flex-between">
+        <view class="flex-row">
+          <text class="step-emoji">🧼</text>
+          <view class="ml-12">
+            <text class="text-md font-semibold block">搓洗（加洗衣液）</text>
+            <text class="text-xs text-secondary">5分钟/轮</text>
+          </view>
+        </view>
+        <view class="flex-row">
+          <text class="text-xs text-secondary mr-8">{{customSteps.wash.count}}轮</text>
+          <text class="text-success">免费</text>
+          <view class="step-controls flex-row ml-8">
+            <view class="ctrl-btn" bindtap="decreaseStep" data-step="wash">−</view>
+            <text class="text-sm ctrl-count">{{customSteps.wash.count}}</text>
+            <view class="ctrl-btn" bindtap="increaseStep" data-step="wash">+</view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 漂洗 -->
+    <view class="step-card card-glass" wx:if="{{customSteps.rinse.enabled}}">
+      <view class="flex-row flex-between">
+        <view class="flex-row">
+          <text class="step-emoji">💦</text>
+          <view class="ml-12">
+            <text class="text-md font-semibold block">漂洗</text>
+            <text class="text-xs text-secondary">5分钟/轮（3次起步）</text>
+          </view>
+        </view>
+        <view class="flex-row">
+          <text class="text-xs text-secondary mr-8">{{customSteps.rinse.count}}轮</text>
+          <text class="text-success">免费</text>
+          <view class="step-controls flex-row ml-8">
+            <view class="ctrl-btn" bindtap="decreaseStep" data-step="rinse">−</view>
+            <text class="text-sm ctrl-count">{{customSteps.rinse.count}}</text>
+            <view class="ctrl-btn" bindtap="increaseStep" data-step="rinse">+</view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 烘干 -->
+    <view class="step-card card-glass">
+      <view class="flex-row flex-between">
+        <view class="flex-row">
+          <text class="step-emoji">💨</text>
+          <view class="ml-12">
+            <text class="text-md font-semibold block">烘干</text>
+            <text class="text-xs text-secondary">20分钟/轮</text>
+          </view>
+        </view>
+        <view class="flex-row">
+          <text class="text-xs text-secondary mr-8">{{customSteps.dry.count}}轮</text>
+          <text class="{{customSteps.dry.count > 0 ? 'text-warning' : 'text-secondary'}}">
+            ¥{{customSteps.dry.count}}/轮
+          </text>
+          <view class="step-controls flex-row ml-8">
+            <view class="ctrl-btn" bindtap="decreaseStep" data-step="dry">−</view>
+            <text class="text-sm ctrl-count">{{customSteps.dry.count}}</text>
+            <view class="ctrl-btn" bindtap="increaseStep" data-step="dry">+</view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 添加步骤按钮 -->
+    <view class="flex-row mt-16" style="gap: 12rpx;">
+      <view class="add-step-btn card-glass flex-center flex-1" wx:if="{{!customSteps.soak.enabled}}" bindtap="toggleStep" data-step="soak">
+        <text class="text-sm text-primary">+ 添加浸泡</text>
+      </view>
+      <view class="add-step-btn card-glass flex-center flex-1" wx:if="{{!customSteps.wash.enabled}}" bindtap="toggleStep" data-step="wash">
+        <text class="text-sm text-primary">+ 添加搓洗</text>
+      </view>
+      <view class="add-step-btn card-glass flex-center flex-1" wx:if="{{!customSteps.rinse.enabled}}" bindtap="toggleStep" data-step="rinse">
+        <text class="text-sm text-primary">+ 添加漂洗</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- ========== 结算信息 ========== -->
+  <view class="summary-card card-glass">
+    <text class="text-md font-semibold mb-16 block">📊 结算信息</text>
+    <view class="flex-row flex-between mt-8">
+      <text class="text-secondary">总时长</text>
+      <text class="text-md font-semibold">{{totalTime}}分钟</text>
+    </view>
+    <view class="flex-row flex-between mt-8">
+      <text class="text-secondary">订单总价</text>
+      <text class="text-xl font-bold primary-gradient-text">¥{{totalPrice}}</text>
+    </view>
+    <view class="flex-row flex-between mt-8" wx:if="{{selectedCouponId && totalPrice > 0 && _discountValue > 0}}">
+      <text class="text-success">优惠券抵扣</text>
+      <text class="text-success">-¥{{_discountValue}}</text>
+    </view>
+    <view class="divider"></view>
+    <view class="flex-row flex-between">
+      <text class="text-md font-semibold">实付金额</text>
+      <text class="text-xxl font-bold primary-gradient-text">¥{{finalPrice}}</text>
+    </view>
+  </view>
+
+  <!-- ========== UV 消毒附加项 ========== -->
+  <view class="section">
+    <text class="section-title text-md font-semibold mb-16 block">🦠 UV 消毒</text>
+
+    <view class="uv-option card-glass">
+      <view class="flex-row flex-between">
+        <view class="flex-1">
+          <text class="text-md font-semibold block">消毒完成后自动进行</text>
+          <text class="text-xs text-secondary mt-4 block">
+            程序结束后设备会执行位置和安全检查，时长由设备配置决定。
+          </text>
+          <text class="text-xs text-warning mt-4 block">
+            运行中可跳过；异常、取消或超时会自动关闭。
+          </text>
+        </view>
+        <switch checked="{{uvDisinfectionEnabled}}" bindchange="toggleUvDisinfection" color="#00BFFF"/>
+      </view>
+    </view>
+  </view>
+
+  <!-- ========== 预约选项 ========== -->
+  <view class="section">
+    <text class="section-title text-md font-semibold mb-16 block">📅 预约使用（可选）</text>
+
+    <view class="booking-option card-glass">
+      <view class="flex-row flex-between">
+        <view>
+          <text class="text-md font-semibold block">预约清洗</text>
+          <text class="text-xs text-secondary mt-4">选择未来时间，到点后确认启动</text>
+        </view>
+        <switch checked="{{isBooking}}" bindchange="toggleBooking" color="#00BFFF"/>
+      </view>
+
+      <view wx:if="{{isBooking}}" class="booking-time-section mt-16">
+        <view class="divider"></view>
+
+        <view class="flex-row flex-between mt-16">
+          <text class="text-sm text-secondary">预约日期</text>
+          <picker mode="date" value="{{bookingDate}}" start="{{todayDate}}" end="{{maxDate}}" bindchange="onDateChange">
+            <view class="picker-display flex-row">
+              <text class="text-primary">{{bookingDate || '请选择日期'}}</text>
+              <text class="text-secondary ml-8">📅</text>
+            </view>
+          </picker>
+        </view>
+
+        <view class="flex-row flex-between mt-16">
+          <text class="text-sm text-secondary">预约时间</text>
+          <picker mode="time" value="{{bookingTime}}" start="08:00" end="22:00" bindchange="onTimeChange">
+            <view class="picker-display flex-row">
+              <text class="text-primary">{{bookingTime || '请选择时间'}}</text>
+              <text class="text-secondary ml-8">🕐</text>
+            </view>
+          </picker>
+        </view>
+
+        <view class="booking-preview primary-gradient mt-16 flex-column flex-center" style="border-radius:16rpx; padding:20rpx;">
+          <text class="text-sm">预计完成时间</text>
+          <text class="text-lg font-bold mt-4">{{endTimePreview}}</text>
+        </view>
+
+        <view class="mt-8">
+          <text class="text-xs text-warning">⚠️ 到点后请打开预约页并连接设备启动</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 提交订单按钮 -->
+  <button class="submit-btn btn-primary shadow-glow mt-24"
+          bindtap="submitOrder"
+          disabled="{{commandBusy}}">
+    <text class="text-xl font-bold" wx:if="{{isBooking}}">确认预约</text>
+    <text class="text-xl font-bold" wx:elif="{{bleConnected}}">提交订单并立即启动</text>
+    <text class="text-xl font-bold" wx:else>提交订单并自动连接设备</text>
+  </button>
+
+  <!-- 清洗进度（启动后显示） -->
+  <view class="progress-section" wx:if="{{isWashing}}">
+    <view class="card-glass flex-column flex-center" style="padding: 40rpx;">
+      <text class="text-lg font-semibold mb-24">🫧 {{statusText}}</text>
+
+      <view class="progress-bar-container mt-8">
+        <view class="progress-bar-fill" style="width: {{progress}}%;"></view>
+      </view>
+      <text class="text-xxl font-bold primary-gradient-text mt-16">{{progress}}%</text>
+      <text class="text-sm text-secondary mt-8">剩余约 {{remainingTime}} 分钟</text>
+
+      <button class="btn-primary mt-24"
+              wx:if="{{awaitingLoad}}"
+              disabled="{{commandBusy}}"
+              style="width: 80%; padding: 16rpx 0;"
+              bindtap="confirmLoad">
+        已放入衣物，开始清洗
+      </button>
+      <button class="btn-primary mt-24"
+              wx:if="{{awaitingUnload}}"
+              disabled="{{commandBusy}}"
+              style="width: 80%; padding: 16rpx 0;"
+              bindtap="confirmUnload">
+        已取出衣物，继续消毒
+      </button>
+      <button class="btn-outline mt-16"
+              wx:if="{{canSkipUv}}"
+              disabled="{{commandBusy}}"
+              style="width: 60%; padding: 16rpx 0;"
+              bindtap="skipUv">
+        跳过 UV
+      </button>
+      <button class="btn-outline mt-24"
+              disabled="{{commandBusy}}"
+              style="width: 60%; padding: 16rpx 0;"
+              bindtap="stopWash">
+        停止清洗
+      </button>
+    </view>
+  </view>
+
+  <view class="section" wx:if="{{machineState === 8}}">
+    <view class="card-glass flex-column flex-center" style="padding: 32rpx;">
+      <text class="text-lg font-semibold text-warning">设备故障 {{faultCode}}</text>
+      <text class="text-xs text-secondary mt-8">详情码：{{faultDetail}}</text>
+      <button class="btn-outline mt-24"
+              disabled="{{commandBusy || !bleConnected}}"
+              bindtap="acknowledgeFault">
+        确认故障并尝试复位
+      </button>
+    </view>
+  </view>
+
+  <!-- ========== 开发测试（UV 灯安全自检，仅诊断，不创建订单） ========== -->
+  <view class="section" wx:if="{{diagEnabled}}">
+    <view class="diag-header card-glass flex-row flex-between" bindtap="toggleDiagSection">
+      <text class="text-md font-semibold">🧪 开发测试</text>
+      <text class="text-sm text-secondary">{{diagExpanded ? '收起 ▲' : '展开 ▼'}}</text>
+    </view>
+
+    <view wx:if="{{diagExpanded}}" class="diag-body card-glass">
+      <text class="text-xs text-warning block">仅供板级诊断，不创建订单、不收费、不改变订单设置。</text>
+      <text class="text-xs text-secondary block mt-8">自检点亮固定 3 秒，由设备端执行安全联锁后自动关闭。</text>
+      <text class="text-xs text-tertiary block mt-8">小程序版本：{{diagVersion}}</text>
+
+      <button class="btn-primary mt-16"
+              disabled="{{diagSelftestBusy || !bleConnected}}"
+              style="width: 100%; padding: 16rpx 0;"
+              bindtap="runUvSelfTest">
+        UV 灯安全自检（3 秒）
+      </button>
+
+      <view class="mt-16" wx:if="{{diagSelftestStatus}}">
+        <text class="text-sm {{diagSelftestPhase === 'fault' || diagSelftestPhase === 'rejected' ? 'text-danger' : 'text-primary'}}">
+          {{diagSelftestStatus}}
+        </text>
+      </view>
+
+      <view class="diag-divider mt-16"></view>
+      <text class="text-xs text-warning block mt-8">执行器板测：请在设备前确认水路/泵管已就绪，时长由固件固定。</text>
+
+      <button class="btn-ghost mt-16"
+              wx:if="{{diagActSourceSupported}}"
+              disabled="{{diagActBusy || diagSelftestBusy || diagIlkBusy || diagBleBusy || !bleConnected}}"
+              style="width: 100%; padding: 16rpx 0;"
+              data-target="source_valve"
+              bindtap="runActuatorSelftest">
+        有压进水阀自检（1.5 秒）
+      </button>
+
+      <button class="btn-ghost mt-16"
+              wx:if="{{diagActTransferSupported}}"
+              disabled="{{diagActBusy || diagSelftestBusy || diagIlkBusy || diagBleBusy || !bleConnected}}"
+              style="width: 100%; padding: 16rpx 0;"
+              data-target="transfer_valve"
+              bindtap="runActuatorSelftest">
+        零压转移阀自检（1.5 秒）
+      </button>
+
+      <button class="btn-ghost mt-16"
+              wx:if="{{diagActDetergentSupported}}"
+              disabled="{{diagActBusy || diagSelftestBusy || diagIlkBusy || diagBleBusy || !bleConnected}}"
+              style="width: 100%; padding: 16rpx 0;"
+              data-target="detergent_pump"
+              bindtap="runActuatorSelftest">
+        洗涤剂蠕动泵自检（0.8 秒）
+      </button>
+
+      <button class="btn-ghost mt-16"
+              wx:if="{{diagActDrainSupported}}"
+              disabled="{{diagActBusy || diagSelftestBusy || diagIlkBusy || diagBleBusy || !bleConnected}}"
+              style="width: 100%; padding: 16rpx 0;"
+              data-target="drain_pump"
+              bindtap="runActuatorSelftest">
+        排水泵自检（2 秒，需桶对齐 180°）
+      </button>
+
+      <button class="btn-ghost mt-16"
+              wx:if="{{diagActHotAirSupported}}"
+              disabled="{{diagActBusy || diagSelftestBusy || diagIlkBusy || diagBleBusy || diagActCooldownMs > 0 || !bleConnected}}"
+              style="width: 100%; padding: 16rpx 0;"
+              data-target="hot_air_coupled"
+              bindtap="runActuatorSelftest">
+        热风模块安全自检（1 秒）
+      </button>
+      <view class="mt-8" wx:if="{{diagActCooldownMs > 0}}">
+        <text class="text-sm text-warning">{{diagActCooldownText}}</text>
+      </view>
+
+      <view class="mt-16" wx:if="{{diagActStatus}}">
+        <text class="text-sm {{diagActPhase === 'fault' || diagActPhase === 'rejected' || diagActPhase === 'timeout' || diagActPhase === 'interrupted' ? 'text-danger' : 'text-primary'}}">
+          {{diagActStatus}}
+        </text>
+      </view>
+
+      <view class="diag-divider mt-16"></view>
+      <text class="text-xs text-warning block mt-8">自动负向测试：验证互锁与断线关断，不创建订单、不收费、不改变订单设置。</text>
+
+      <!-- A. 阀互锁自动测试：source 受理后 200ms 请求 transfer，必须被拒绝 -->
+      <button class="btn-ghost mt-16"
+              disabled="{{diagIlkBusy || diagActBusy || diagSelftestBusy || diagBleBusy || !bleConnected}}"
+              style="width: 100%; padding: 16rpx 0;"
+              bindtap="runInterlockAutoTest">
+        阀互锁自动测试（source→200ms→transfer 必须拒绝）
+      </button>
+      <view class="mt-8" wx:if="{{diagIlkStatus}}">
+        <text class="text-sm {{diagIlkPhase === 'fail' ? 'text-danger' : 'text-primary'}}">{{diagIlkStatus}}</text>
+      </view>
+      <view class="mt-4 flex-row flex-wrap" wx:if="{{diagIlkPhase === 'transfer_done' || diagIlkPhase === 'done' || diagIlkPhase === 'fail'}}">
+        <text class="text-xs text-secondary">source: {{diagIlkSourceAck}} · transfer: {{diagIlkTransferAck}}</text>
+      </view>
+      <view class="mt-4 flex-row flex-wrap" wx:if="{{diagIlkPhase === 'done' || diagIlkPhase === 'fail'}}">
+        <text class="text-xs {{diagIlkOff ? 'text-success' : 'text-danger'}}">
+          终态 {{diagIlkTerminal}} · output_confirmed_off={{diagIlkOff}} · 结果 {{diagIlkResult || '--'}}
+        </text>
+      </view>
+
+      <!-- B. BLE 断线自动关断测试：source 受理后 250ms 断开，重连后查终态 -->
+      <button class="btn-ghost mt-16"
+              disabled="{{diagBleBusy || diagActBusy || diagSelftestBusy || diagIlkBusy || !bleConnected}}"
+              style="width: 100%; padding: 16rpx 0;"
+              bindtap="runBleDisconnectAutoTest">
+        BLE 断线自动关断测试（受理后 250ms 断开）
+      </button>
+      <view class="mt-8" wx:if="{{diagBleStatus}}">
+        <text class="text-sm {{diagBlePhase === 'fail' ? 'text-danger' : 'text-primary'}}">{{diagBleStatus}}</text>
+      </view>
+      <view class="mt-4 flex-row flex-wrap" wx:if="{{diagBlePhase === 'done' || diagBlePhase === 'fail'}}">
+        <text class="text-xs {{diagBleOff ? 'text-success' : 'text-danger'}}">
+          终态 {{diagBleTerminal}} · last_code={{diagBleLastCode}} · output_confirmed_off={{diagBleOff}} · 结果 {{diagBleResult || '--'}}
+        </text>
+      </view>
+
+      <view class="diag-divider mt-16"></view>
+      <text class="text-xs text-warning block mt-8">ZS-X11B 搅动电机台架：点“开始台架”只检查门禁，第二次确认才通电。单方向测试固定5秒（含软启动斜坡），PWM取下方滑杆。驱动无刹车，停止为PWM=0滑行停车。</text>
+
+      <!-- 台架类型选择 -->
+      <view class="mt-16 flex-row flex-wrap">
+        <button wx:for="{{diagMbTypes}}"
+                wx:key="*this"
+                class="btn-ghost mr-12 {{diagMbType === item && !diagMbBusy ? 'active' : ''}}"
+                style="padding: 12rpx 28rpx; font-size: 24rpx;"
+                disabled="{{diagMbBusy || !bleConnected}}"
+                data-type="{{item}}"
+                bindtap="selectMbType">
+          {{item === 'pulsator' ? '搅动单脉冲 0°' : (item === 'drum' ? '滚筒 90°' : (item === 'pulsator_behavior' ? '搅动交替运行' : '3 步序列'))}}
+        </button>
+      </view>
+
+      <!-- 开始台架 -->
+      <button class="btn-ghost mt-16"
+              disabled="{{diagMbBusy || !diagMbEnabled || !bleConnected}}"
+              style="width: 100%; padding: 16rpx 0;"
+              bindtap="startMotorBench">
+        开始台架：{{diagMbType === 'pulsator' ? 'ZS-X11B 单脉冲（0°）' : (diagMbType === 'drum' ? '滚筒（90°）' : (diagMbType === 'pulsator_behavior' ? 'ZS-X11B 正反交替（0°）' : '霍尔 3 步序列 0°→90°→180°'))}}
+      </button>
+
+      <!-- 运行状态 -->
+      <view class="mt-16" wx:if="{{diagMbStatus || diagMbBusy}}">
+        <text class="text-sm {{diagMbPhase === 'fault' || diagMbPhase === 'rejected' || diagMbPhase === 'timeout' || diagMbPhase === 'interrupted' || diagMbPhase === 'unknown' ? 'text-danger' : (diagMbPhase === 'complete' ? 'text-success' : 'text-primary')}}">
+          {{diagMbStatus}}
+        </text>
+      </view>
+      <view class="mt-8 flex-row flex-wrap" wx:if="{{diagMbBusy}}">
+        <text class="text-xs text-secondary">步 {{diagMbStep + 1}}/{{diagMbSteps}} · 位置 {{diagMbPos}}° · 就位 {{diagMbReady ? '是' : '否'}}</text>
+      </view>
+
+      <!-- 确认脉冲：仅在固件 WAIT_CONFIRM（位置已就位）时显示 -->
+      <button class="btn-ghost mt-16"
+              wx:if="{{diagMbPhase === 'wait_confirm'}}"
+              disabled="{{!diagMbReady || !bleConnected}}"
+              style="width: 100%; padding: 16rpx 0;"
+              bindtap="confirmMotorBenchPulse">
+        {{diagMbType === 'pulsator_behavior' ? '确认运行（正反交替约15秒）' : '确认运行（单方向5秒）'}}
+      </button>
+
+      <!-- 取消台架：运行中可用 -->
+      <button class="btn-ghost mt-16"
+              wx:if="{{diagMbBusy}}"
+              disabled="{{!bleConnected}}"
+              style="width: 100%; padding: 16rpx 0;"
+              bindtap="cancelMotorBench">
+        取消台架（强制全部输出 OFF）
+      </button>
+
+      <!-- 终态详情 -->
+      <view class="mt-8 flex-row flex-wrap" wx:if="{{!diagMbBusy && (diagMbTerm !== 0 || diagMbPhase === 'complete' || diagMbPhase === 'rejected' || diagMbPhase === 'interrupted' || diagMbPhase === 'timeout' || diagMbPhase === 'fault')}}">
+        <text class="text-xs {{diagMbOff ? 'text-success' : 'text-danger'}}">
+          终态码 {{diagMbTerm}} · 码 {{diagMbLc}} · 输出确认关闭={{diagMbOff ? '是' : '否'}} · {{diagMbOff ? '可继续下一步' : '请检查设备，必要时断电'}}
+        </text>
+      </view>
+
+      <!-- 方向标定：未标定时 BL50 REAL 模式拒绝一切运动（台架脉冲会被 SUBMIT_FAILED 拦下）。
+           仅按连接禁用；busy 由 handler 内 toast 守卫（busy 卡死时也不能静默禁用按钮） -->
+      <view class="mt-16" wx:if="{{diagMbCalSupported}}">
+        <button class="btn-ghost"
+                disabled="{{!bleConnected}}"
+                style="width: 100%; padding: 16rpx 0;"
+                bindtap="calibrateDirection">
+          方向标定（允许ZS-X11B台架运行并写入方向配置）
+        </button>
+        <text class="text-xs mt-8 block {{diagMbCalStatus ? 'text-primary' : ''}}">{{diagMbCalStatus}}</text>
+        <text class="text-xs text-danger block mt-8">DBG 连接={{bleConnected ? 'Y' : 'N'}} · 支持={{diagMbCalSupported ? 'Y' : 'N'}} · 台架忙={{diagMbBusy ? 'Y' : 'N'}}</text>
+      </view>
+
+      <!-- 换位电机（IBT-2 有刷位置电机）板测：驱动滚筒转到目标角度，霍尔确认 -->
+      <view class="mt-16" wx:if="{{diagPosEnabled}}">
+        <text class="text-xs text-warning block">换位电机测试：驱动 IBT-2 把滚筒转到目标角度（空载，霍尔确认）。</text>
+        <view class="mt-8 flex-row flex-wrap">
+          <button wx:for="{{['0','45','90','180','270']}}"
+                  wx:key="*this"
+                  class="btn-ghost mr-12"
+                  style="padding: 12rpx 24rpx; font-size: 24rpx;"
+                  disabled="{{!bleConnected || diagMbBusy || diagSwingBusy}}"
+                  data-target="{{item}}"
+                  bindtap="positionMoveTo">
+            → {{item}}°
+          </button>
+        </view>
+        <text class="text-xs mt-8 block {{diagPosStatus ? 'text-primary' : ''}}">{{diagPosStatus}}</text>
+      </view>
+
+      <!-- 连续换向展示台（position_swing）：正-停-反-停…重复段，目视+霍尔观察 -->
+      <view class="mt-16" wx:if="{{diagSwingEnabled}}">
+        <text class="text-xs text-warning block">换向展示台：连续正转 → 刹停 → 反转 → 刹停 …重复（空载，霍尔观察）。段数与每段时长由固件 clamp：每段 ≤8s、总段 ≤4。</text>
+        <view class="mt-8 flex-row flex-wrap">
+          <button class="btn-primary mr-12"
+                  style="padding: 12rpx 28rpx; font-size: 24rpx;"
+                  disabled="{{!bleConnected || diagSwingBusy || diagMbBusy}}"
+                  bindtap="startSwingTest">开始连续换向</button>
+          <button class="btn-ghost mt-8 mr-12"
+                  style="padding: 12rpx 28rpx; font-size: 24rpx;"
+                  disabled="{{!bleConnected || !diagSwingBusy}}"
+                  bindtap="cancelSwingTest">停止换向</button>
+          <button class="btn-ghost mt-8"
+                  style="padding: 12rpx 28rpx; font-size: 24rpx;"
+                  disabled="{{!bleConnected}}"
+                  bindtap="resyncSwingStatus">刷新状态</button>
+        </view>
+        <view class="mt-8 flex-row flex-wrap" wx:if="{{diagSwingStatus || diagSwingBusy}}">
+          <text class="text-sm {{diagSwingPhase === 'fault' || diagSwingPhase === 'rejected' || diagSwingPhase === 'interrupted' || diagSwingPhase === 'timeout' || diagSwingPhase === 'unknown' ? 'text-danger' : (diagSwingPhase === 'complete' ? 'text-success' : 'text-primary')}}">{{diagSwingStatus}}</text>
+        </view>
+        <view class="mt-4 flex-row flex-wrap" wx:if="{{diagSwingBusy}}">
+          <text class="text-xs text-secondary">段 {{diagSwingSegDone + 1}}/{{diagSwingRounds || '?'}} · 方向 {{diagSwingDirCw ? 'CW' : 'CCW'}} · 每段 {{diagSwingDwellMs ? diagSwingDwellMs + 'ms' : '?'}} · 输出确认关={{diagSwingOff ? '是' : '否'}}</text>
+        </view>
+      </view>
+
+      <view class="diag-divider mt-16"></view>
+      <text class="text-xs text-warning block mt-8">🎛️ 板测参数（滑杆拖动实时生效；「设为默认」写入 NVS，重启保留）</text>
+
+      <view class="mt-16">
+        <view class="flex-row flex-between">
+          <text class="text-sm text-secondary">搅动电机 ZS-X11B（台架脉冲）</text>
+          <text class="text-sm text-primary">{{diagBl50Pwm}}%</text>
+        </view>
+        <slider class="mt-4" min="0" max="100" step="5" value="{{diagBl50Pwm}}"
+                activeColor="#00BFFF" backgroundColor="#2A3B55"
+                bindchanging="onDiagPrefChanging" bindchange="onDiagPrefChange"
+                data-key="bl50_pwm"/>
+      </view>
+
+      <view class="mt-16">
+        <view class="flex-row flex-between">
+          <text class="text-sm text-secondary">换位电机 IBT-2（角度切换/换向）</text>
+          <text class="text-sm text-primary">{{diagIbt2Pwm}}%</text>
+        </view>
+        <slider class="mt-8" min="0" max="100" step="5" value="{{diagIbt2Pwm}}"
+                activeColor="#00BFFF" backgroundColor="#2A3555"
+                bindchanging="onDiagPrefChanging" bindchange="onDiagPrefChange"
+                data-key="ibt2_pwm"/>
+      </view>
+
+      <view class="mt-16">
+        <view class="flex-row flex-between">
+          <text class="text-sm text-secondary">执行器自检时长</text>
+          <text class="text-sm text-primary">{{diagActDurMs/1000}}s</text>
+        </view>
+        <slider class="mt-8" min="0.2" max="10" step="0.1" value="{{diagActDurMs/1000}}"
+                activeColor="#00BFFF" backgroundColor="#2A3555"
+                bindchanging="onDiagPrefChanging" bindchange="onDiagPrefChange"
+                data-key="act_ms"/>
+      </view>
+
+      <view class="mt-16 flex-row flex-wrap">
+        <button class="btn-ghost mr-12"
+                style="padding: 12rpx 28rpx; font-size: 24rpx;"
+                disabled="{{!bleConnected}}"
+                bindtap="setDiagPrefsAsDefault">设为默认值</button>
+        <button class="btn-ghost mt-8"
+                style="padding: 12rpx 28rpx; font-size: 24rpx;"
+                disabled="{{!bleConnected}}"
+                bindtap="resetDiagPrefs">恢复出厂</button>
+      </view>
+      <view class="mt-8 flex-row flex-wrap" wx:if="{{diagPrefsStatus}}">
+        <text class="text-xs {{diagPrefsStatus.indexOf('失败') >= 0 ? 'text-danger' : 'text-primary'}}">{{diagPrefsStatus}}</text>
+      </view>
+    </view>
+  </view>
+
+</view>

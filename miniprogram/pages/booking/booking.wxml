@@ -1,0 +1,152 @@
+<view class="container">
+  
+  <view class="flex-between mb-24">
+    <text class="text-xl font-bold">📅 我的预约</text>
+    <text class="text-xs text-secondary">共{{allBookings.length}}个</text>
+  </view>
+
+  <!-- 标签切换 -->
+  <view class="tabs flex-row mb-24">
+    <view class="tab-item {{currentTab === 'active' ? 'active' : ''}}" bindtap="switchTab" data-tab="active">
+      <text>进行中</text>
+    </view>
+    <view class="tab-item {{currentTab === 'completed' ? 'active' : ''}}" bindtap="switchTab" data-tab="completed">
+      <text>已完成</text>
+    </view>
+    <view class="tab-item {{currentTab === 'cancelled' ? 'active' : ''}}" bindtap="switchTab" data-tab="cancelled">
+      <text>已取消</text>
+    </view>
+  </view>
+
+  <!-- 加载中 -->
+  <view class="flex-center mt-32" wx:if="{{loading}}">
+    <text class="text-secondary">加载中...</text>
+  </view>
+
+  <!-- 预约列表 -->
+  <view wx:if="{{!loading && displayBookings.length > 0}}">
+    <view class="booking-card card-glass" wx:for="{{displayBookings}}" wx:key="id">
+
+      <view class="flex-row flex-between mb-12">
+        <text class="text-lg font-semibold">{{item.deviceName}}</text>
+        <text class="tag {{item.status === '已预约' ? 'tag-warning' : item.status === '已完成' ? 'tag-success' : ''}}" style="{{item.status === '已取消' ? 'background:rgba(255,82,82,0.2);color:#FF5252;' : ''}}">
+          {{item.status}}
+        </text>
+      </view>
+
+      <view class="booking-info">
+        <view class="flex-row flex-between mt-8">
+          <text class="text-xs text-secondary">预约时间</text>
+          <text class="text-sm">{{item.bookingDate || item.startTime}} {{item.bookingTime || ''}}</text>
+        </view>
+        <view class="flex-row flex-between mt-8">
+          <text class="text-xs text-secondary">预计完成</text>
+          <text class="text-sm">{{item.endTime}}</text>
+        </view>
+        <view class="flex-row flex-between mt-8">
+          <text class="text-xs text-secondary">清洗模式</text>
+          <text class="text-sm">{{item.package === 'quick' ? '无烘干快洗' : '烘干清洗'}}</text>
+        </view>
+        <view class="flex-row flex-between mt-8">
+          <text class="text-xs text-secondary">金额</text>
+          <text class="text-sm">¥{{item.finalPrice}}</text>
+        </view>
+      </view>
+
+      <!-- 倒计时 -->
+      <view wx:if="{{item.status === '已预约' && item.countdown && !item.isReady}}">
+        <view class="divider"></view>
+        <view class="flex-row flex-between mt-12">
+          <text class="text-sm text-secondary">距离启动</text>
+          <text class="text-lg font-bold primary-gradient-text">{{item.countdown}}</text>
+        </view>
+        <view class="progress-bar-mini mt-8">
+          <view class="progress-fill" style="width: {{item.progressPercent}}%;"></view>
+        </view>
+      </view>
+
+      <!-- 已到期 -->
+      <view wx:if="{{item.isReady}}">
+        <view class="primary-gradient flex-row flex-center mt-12" style="border-radius:16rpx; padding:16rpx;">
+          <text class="text-md font-semibold">⚡ 预约时间已到，可以启动</text>
+        </view>
+      </view>
+
+      <!-- 按钮 -->
+      <view class="flex-row mt-16" style="gap: 12rpx; justify-content: flex-end;">
+
+        <block wx:if="{{item.status === '已预约'}}">
+          <button class="action-btn" style="background:rgba(64,158,255,0.15);color:#409EFF;font-size:24rpx;" bindtap="openTimePicker" data-booking="{{item}}">修改时间</button>
+          <button class="action-btn btn-outline" bindtap="cancelBooking" data-id="{{item._id || item.id}}">取消预约</button>
+          <button class="action-btn primary-gradient" bindtap="startNow" data-booking="{{item}}" style="opacity: {{item.isReady ? 1 : 0.5}};">
+            {{item.isReady ? '立即启动' : '等待中'}}
+          </button>
+        </block>
+
+        <block wx:if="{{item.status === '已完成'}}">
+          <button class="action-btn btn-outline" bindtap="rebook" data-booking="{{item}}">再次预约</button>
+        </block>
+
+        <block wx:if="{{item.status === '已取消'}}">
+          <button class="action-btn btn-outline" bindtap="rebook" data-booking="{{item}}">重新预约</button>
+          <button class="action-btn" style="background:rgba(255,82,82,0.2);color:#FF5252;" bindtap="deleteBooking" data-id="{{item._id || item.id}}">删除</button>
+        </block>
+      </view>
+    </view>
+  </view>
+
+  <!-- ====== 修改预约时间弹窗 ====== -->
+  <view class="mask" wx:if="{{showTimePicker}}" bindtap="closeTimePicker">
+    <view class="time-picker-dialog card-glass" catchtap="noop">
+      <text class="text-lg font-semibold block text-center mb-16">修改预约时间</text>
+      <text class="text-sm text-secondary block text-center mb-16">设备：{{editDeviceName}}</text>
+
+      <view class="flex-row flex-between mt-16">
+        <text class="text-sm text-secondary">预约日期</text>
+        <picker mode="date" value="{{newDate}}" start="{{todayDate}}" end="{{maxDate}}" bindchange="onDateChange">
+          <view class="picker-display flex-row">
+            <text class="text-primary">{{newDate || '请选择日期'}}</text>
+            <text class="text-secondary ml-8">📅</text>
+          </view>
+        </picker>
+      </view>
+
+      <view class="flex-row flex-between mt-24">
+        <text class="text-sm text-secondary">预约时间</text>
+        <picker mode="time" value="{{newTime}}" start="08:00" end="22:00" bindchange="onTimeChange">
+          <view class="picker-display flex-row">
+            <text class="text-primary">{{newTime || '请选择时间'}}</text>
+            <text class="text-secondary ml-8">🕐</text>
+          </view>
+        </picker>
+      </view>
+
+      <view class="flex-row mt-24" style="gap: 16rpx;">
+        <button class="btn-outline flex-1" bindtap="closeTimePicker">取消</button>
+        <button class="btn-primary flex-1" bindtap="confirmTimeChange" disabled="{{editing}}" style="padding: 20rpx 0; font-size:28rpx;">
+          {{editing ? '保存中...' : '确认修改'}}
+        </button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state flex-column flex-center mt-32" wx:if="{{!loading && displayBookings.length === 0}}">
+    <text class="text-xxxl">📅</text>
+    <text class="text-md text-secondary mt-16">暂无预约记录</text>
+    <button class="btn-primary mt-24" style="width: 300rpx; padding: 20rpx 0;" bindtap="goWash">去预约</button>
+  </view>
+
+  <!-- 福利入口 -->
+  <view class="welfare-entry card-glass flex-row flex-between mt-24" bindtap="watchAd">
+    <view class="flex-row">
+      <text class="text-xxl mr-12">🎬</text>
+      <view>
+        <text class="text-md font-semibold block">观看广告获得优惠券</text>
+        <text class="text-xs text-secondary">当前有{{coupons}}张可用</text>
+      </view>
+    </view>
+    <text class="text-lg text-primary">›</text>
+  </view>
+
+</view>

@@ -1,0 +1,11 @@
+{
+  "name": "JJTP-A01",
+  "bleName": "JJTP-A01",
+  "location": "宿舍楼A区 1楼东侧",
+  "ip": "192.168.1.101",
+  "status": "idle",
+  "fault": false,
+  "faultReason": "",
+  "lastStatusUpdate": null,
+  "createdAt": null
+}

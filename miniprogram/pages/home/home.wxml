@@ -1,0 +1,98 @@
+<view class="container">
+  
+  <!-- 头部区域 -->
+  <view class="header">
+    <view class="top-bar flex-row flex-between">
+      <text class="text-md font-semibold">👋 欢迎使用净界同频</text>
+      <view class="profile-entry flex-row" bindtap="goProfile">
+        <text class="text-sm text-primary">我的</text>
+        <text class="text-lg ml-8">👤</text>
+      </view>
+    </view>
+    <view class="location-bar flex-row mt-8">
+      <image class="loc-icon" src="/images/icon_location.png" mode="aspectFit"></image>
+      <text class="text-md flex-1 ml-8">{{currentLocation}}</text>
+      <text class="text-xs text-primary" bindtap="refreshLocation">重新定位</text>
+    </view>
+  </view>
+
+  <!-- 品牌标语 -->
+  <view class="slogan-section">
+    <text class="slogan-title">净界同频</text>
+    <text class="slogan-sub">洁净如新</text>
+  </view>
+
+  <!-- 核心功能入口 -->
+  <view class="core-actions flex-row" style="gap: 12rpx;">
+    <button class="action-card primary-gradient flex-1 flex-column flex-center" bindtap="goWash">
+      <text class="action-icon-text">🧺</text>
+      <text class="action-name text-lg font-semibold mt-12">立即 / 预约洗烘</text>
+      <text class="action-desc text-xs mt-4">现在启动或预约稍后清洗</text>
+    </button>
+    <button class="action-card card-glass flex-1 flex-column flex-center" bindtap="scanQRCode">
+      <text class="action-icon-text">📷</text>
+      <text class="action-name text-lg font-semibold mt-12">扫一扫</text>
+      <text class="action-desc text-xs mt-4">扫码绑定设备</text>
+    </button>
+    <button class="action-card card-glass flex-1 flex-column flex-center" bindtap="goDevices">
+      <text class="action-icon-text">📡</text>
+      <text class="action-name text-lg font-semibold mt-12">附近设备</text>
+      <text class="action-desc text-xs mt-4">查找周边在线设备</text>
+    </button>
+  </view>
+
+  <!-- 便民服务入口 -->
+  <view class="service-section">
+    <text class="section-title text-md font-semibold mb-16 block">便民服务</text>
+    <view class="service-grid">
+      <view class="service-item card-glass flex-column flex-center" bindtap="goRepair">
+        <image class="service-icon" src="/images/icon_repair.png" mode="aspectFit"></image>
+        <text class="text-sm mt-12">报修/投诉</text>
+        <text class="text-xs text-secondary mt-4">设备故障上报</text>
+      </view>
+      <view class="service-item card-glass flex-column flex-center" bindtap="callService">
+        <image class="service-icon" src="/images/icon_phone.png" mode="aspectFit"></image>
+        <text class="text-sm mt-12">电话客服</text>
+        <text class="text-xs text-secondary mt-4">一键联系客服</text>
+      </view>
+      <view class="service-item card-glass flex-column flex-center" bindtap="goTips">
+        <image class="service-icon" src="/images/icon_tips.png" mode="aspectFit"></image>
+        <text class="text-sm mt-12">洗衣小贴士</text>
+        <text class="text-xs text-secondary mt-4">使用相关说明</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 附近设备快速预览 -->
+  <view class="device-preview card-glass">
+    <view class="flex-between mb-16">
+      <text class="text-md font-semibold">🔄 附近在线设备</text>
+      <text class="text-xs text-primary" bindtap="goDevices">查看全部 ›</text>
+    </view>
+    <view class="device-list flex-row" wx:if="{{onlineDevices.length > 0}}">
+      <view class="device-chip {{item.fault ? 'device-fault' : ''}}" wx:for="{{onlineDevices}}" wx:key="id" bindtap="selectDevice" data-device="{{item}}">
+        <view class="status-dot {{item.fault ? 'dot-fault' : item.status === 'working' ? 'dot-working' : 'dot-success'}}"></view>
+        <text class="text-sm ml-8 {{item.fault ? 'text-secondary' : ''}}">{{item.name}}</text>
+        <text class="text-xs {{item.fault ? 'text-danger' : 'text-secondary'}} ml-8">
+          {{item.fault ? '故障' : (item.status === 'working' ? '工作中' : '空闲')}}
+        </text>
+      </view>
+    </view>
+    <text class="text-xs text-secondary text-center block" wx:if="{{onlineDevices.length === 0}}">
+      暂未发现在线设备
+    </text>
+  </view>
+
+  <!-- 优惠券提示 -->
+  <view class="coupon-banner card-glass flex-row flex-between" wx:if="{{coupons > 0}}">
+    <view class="flex-row">
+      <text class="text-xxl mr-12">🎫</text>
+      <view>
+        <text class="text-md font-semibold block">{{coupons}}张可用优惠券</text>
+        <text class="text-xs text-secondary">下单时自动抵扣</text>
+      </view>
+    </view>
+    <text class="text-lg text-primary">›</text>
+  </view>
+
+</view>
